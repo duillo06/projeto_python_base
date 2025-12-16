@@ -3,7 +3,7 @@ from .base import *
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "seudominio.com",
-    "www.seudominio.com",
+    "souasf.com.br",
+    "www.souasf.com.br",
 ]
 # Configurações específicas para produção
