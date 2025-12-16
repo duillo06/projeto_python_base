@@ -1,0 +1,5 @@
+Django>=5.0,<6.0 # Framework web em Python
+djangorestframework # Framework para construir APIs RESTful com Django
+python-dotenv # Carrega variáveis de ambiente de um arquivo .env
+psycopg2-binary # Driver PostgreSQL para Python
+djangorestframework-simplejwt  # Autenticação JWT para Django REST Framework

@@ -1,0 +1,228 @@
+## 🗂️ Estrutura de Pastas
+
+backend/
+├── docker-compose.yml
+├── Dockerfile
+├── .env
+├── manage.py
+│
+├── config/                  # Configurações globais do Django
+│   ├── __init__.py
+│   ├── urls.py
+│   ├── asgi.py
+│   ├── wsgi.py
+│   └── settings/
+│       ├── __init__.py
+│       ├── base.py          # Configurações comuns
+│       ├── local.py         # Ambiente de desenvolvimento
+│       └── production.py    # Ambiente de produção
+│
+├── apps/                    # Apps do projeto (regras de negócio)
+│   ├── __init__.py
+│   ├── usuarios/
+│   ├── eventos/
+│   └── tickets/
+│
+└── requirements.txt
+```
+
+---
+
+## 🧠 Conceito da Estrutura
+
+### `config/`
+A pasta `config` concentra **apenas** o que é necessário para inicializar o Django:
+
+- settings
+- urls globais
+- asgi / wsgi
+
+Não coloco regras de negócio, models ou lógica de aplicação aqui. Isso ajuda a manter o projeto organizado e evita acoplamento desnecessário.
+
+---
+
+### `apps/`
+Todos os apps do projeto ficam dentro da pasta `apps`, organizados por domínio.
+
+Exemplos:
+- usuários
+- imobiliaria
+- Fiança
+- Incêndio
+
+Cada app é responsável apenas pelo seu contexto.
+
+---
+
+## ⚙️ Settings por Ambiente
+
+settings por ambiente porque isso facilita muito o uso com Docker, CI/CD e produção.
+
+### `base.py`
+Contém tudo que é comum a qualquer ambiente:
+
+- INSTALLED_APPS
+- MIDDLEWARE
+- TEMPLATES
+- Configurações base de banco, internacionalização, etc.
+
+### `local.py`
+Usado durante o desenvolvimento:
+
+```python
+from .base import *
+
+DEBUG = True
+ALLOWED_HOSTS = ["*"]
+```
+
+### `production.py`
+Usado em produção:
+
+```python
+from .base import *
+
+DEBUG = False
+ALLOWED_HOSTS = [
+    "seudominio.com",
+    "www.seudominio.com",
+]
+```
+
+---
+
+## 🚀 Criação do Projeto
+
+O projeto foi iniciado com o comando abaixo, já definindo `config` como módulo principal:
+
+```bash
+django-admin startproject config .
+```
+
+Depois disso, o `settings.py` padrão foi convertido para uma estrutura em pasta:
+
+```bash
+mkdir config/settings
+mv config/settings.py config/settings/base.py
+touch config/settings/__init__.py
+```
+
+---
+
+## 🧱 Criando Apps da Forma Correta
+
+Sempre crio os apps manualmente dentro da pasta `apps` para manter o padrão.
+
+### 1️⃣ Criar a pasta `apps`
+
+```bash
+mkdir -p apps
+touch apps/__init__.py
+```
+
+---
+
+### 2️⃣ Criar a pasta do app
+
+Exemplo: `usuarios`
+
+```bash
+mkdir -p apps/usuarios
+```
+
+---
+
+### 3️⃣ Criar o app com `startapp`
+
+```bash
+docker compose run --rm web python manage.py startapp usuarios apps/usuarios
+```
+
+Isso gera a estrutura padrão do Django dentro da pasta correta.
+
+---
+
+## 🧩 Ajustes Necessários Após Criar um App
+
+### 1️⃣ Ajustar o `apps.py`
+
+Arquivo: `apps/usuarios/apps.py`
+
+```python
+from django.apps import AppConfig
+
+class UsuariosConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.usuarios"
+```
+
+Esse ajuste é essencial para evitar erros de importação.
+
+---
+
+### 2️⃣ Registrar no `INSTALLED_APPS`
+
+Arquivo: `config/settings/base.py`
+
+```python
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    # Apps do projeto
+    "apps.usuarios",
+    "apps.eventos",
+]
+```
+
+---
+
+## 🌐 URLs
+
+As URLs globais ficam em `config/urls.py`, e cada app mantém suas próprias rotas.
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("usuarios/", include("apps.usuarios.urls")),
+]
+```
+
+---
+
+## 🐳 Uso com Docker
+
+Subir o projeto:
+
+```bash
+docker compose up --build
+```
+
+Rodar comandos Django:
+
+```bash
+docker compose run --rm web python manage.py makemigrations
+docker compose run --rm web python manage.py migrate
+docker compose run --rm web python manage.py createsuperuser
+```
+
+---
+
+## ❌ Erros Comuns
+
+Alguns erros que esse padrão ajuda a evitar:
+
+- registrar o app como `usuarios` em vez de `apps.usuarios`
+- esquecer de ajustar o `name` no `apps.py`
+- misturar configuração com regra de negócio
+- não separar settings por ambiente
+
+
+
