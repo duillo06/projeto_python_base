@@ -19,7 +19,7 @@ backend/
 │
 ├── apps/                    # Apps do projeto (regras de negócio)
 │   ├── __init__.py
-│   ├── usuarios/
+│   ├── users/
 │   ├── eventos/
 │   └── tickets/
 │
@@ -124,10 +124,10 @@ touch apps/__init__.py
 
 ### 2️⃣ Criar a pasta do app
 
-Exemplo: `usuarios`
+Exemplo: `users`
 
 ```bash
-mkdir -p apps/usuarios
+mkdir -p apps/users
 ```
 
 ---
@@ -135,67 +135,10 @@ mkdir -p apps/usuarios
 ### 3️⃣ Criar o app com `startapp`
 
 ```bash
-docker compose run --rm web python manage.py startapp usuarios apps/usuarios
+docker compose run --rm web python manage.py startapp users apps/users
 ```
 
 Isso gera a estrutura padrão do Django dentro da pasta correta.
-
----
-
-## 🧩 Ajustes Necessários Após Criar um App
-
-### 1️⃣ Ajustar o `apps.py`
-
-Arquivo: `apps/usuarios/apps.py`
-
-```python
-from django.apps import AppConfig
-
-class UsuariosConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.usuarios"
-```
-
-Esse ajuste é essencial para evitar erros de importação.
-
----
-
-### 2️⃣ Registrar no `INSTALLED_APPS`
-
-Arquivo: `config/settings/base.py`
-
-```python
-INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-
-    # Apps do projeto
-    "apps.usuarios",
-    "apps.eventos",
-]
-```
-
----
-
-## 🌐 URLs
-
-As URLs globais ficam em `config/urls.py`, e cada app mantém suas próprias rotas.
-
-```python
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("usuarios/", include("apps.usuarios.urls")),
-]
-```
-
----
 
 ## 🐳 Uso com Docker
 
@@ -218,9 +161,6 @@ docker compose run --rm web python manage.py createsuperuser
 ## ❌ Erros Comuns
 
 Alguns erros que esse padrão ajuda a evitar:
-
-- registrar o app como `usuarios` em vez de `apps.usuarios`
-- esquecer de ajustar o `name` no `apps.py`
 - misturar configuração com regra de negócio
 - não separar settings por ambiente
 
